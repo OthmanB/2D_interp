@@ -11,8 +11,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <gsl/gsl_interp2d.h>
-#include "str.h"
 #include "data.h"
+#include "str.h"
 
 using namespace std;
 
@@ -27,7 +27,6 @@ GridData loadGridData(const string& filename) {
     vector<std::string> v, sp;
     std::vector<double> ztmp;
     GridData data;
-
     // Define input stream
     ifstream file_in(filename, ios_base::in | ios_base::binary);
     if (!file_in) {
@@ -61,26 +60,30 @@ GridData loadGridData(const string& filename) {
         if (v[0] == "z"){
             continue;
         } else{
+            ztmp.clear();
             if(v[0] != "x" && v[0] != "y"){
                 // The other lines are lines of z-values
-                ztmp.clear();
                 for(size_t i=0;i<data.n_cols;i++){
                     ztmp.push_back(str_to_dbl(sp[i]));
                 }
                 data.z.push_back(ztmp); // push the line into the 2D vector
+                ztmp.clear();
             }
         }
     }  
+
     // Process the last line, if data are found on it. This allows to account for case where the user did not add a \n at the last line of the data file
 	if (getline(in,line)){
         s=strtrim(line);
         sp=strsplit(s, " \t");
         // The other lines are lines of z-values
+        //ztmp.clear();
         ztmp.clear();
         for(size_t i=0;i<data.n_cols;i++){
             ztmp.push_back(str_to_dbl(sp[i]));
         }
         data.z.push_back(ztmp); // push the line into the 2D vector
+        ztmp.clear();
 	}
     return data;
 }
@@ -89,36 +92,34 @@ GridData loadGridData(const string& filename) {
 double interpolate(const GridData& data, double x, double y) {
     int nx = data.x.size();
     int ny = data.y.size();
-
     // Create arrays with 2D data points
     double* xdata = new double[nx];
     double* ydata = new double[ny];
     double* zdata = new double[nx * ny];
-
     for (int i = 0; i < nx; i++) {
         xdata[i] = data.x[i];
     }
-
     for (int j = 0; j < ny; j++) {
         ydata[j] = data.y[j];
     }
-
     for (int j = 0; j < ny; j++) {
         for (int i = 0; i < nx; i++) {
-            zdata[j * nx + i] = data.z[i][j];
+            //zdata[j * nx + i] = data.z[i][j];
+            zdata[j * nx + i] = data.z[j][i];
         }
     }
     // Initialize interp2d object
-    const gsl_interp2d_type* T = gsl_interp2d_bilinear;//gsl_interp2d_bicubic;
+    //const gsl_interp2d_type* T = gsl_interp2d_bilinear;//gsl_interp2d_bicubic;
+    const gsl_interp2d_type* T = gsl_interp2d_bicubic;
     gsl_interp2d* interp = gsl_interp2d_alloc(T, nx, ny);
     gsl_interp2d_init(interp, xdata, ydata, zdata, nx, ny);
-
+    
     // Evaluate interpolated value
     double result;
     gsl_interp_accel* xacc = gsl_interp_accel_alloc();
     gsl_interp_accel* yacc = gsl_interp_accel_alloc();
     gsl_interp2d_eval_e(interp, xdata, ydata, zdata, x, y, xacc, yacc, &result);
-
+    
     // Free resources
     delete[] xdata;
     delete[] ydata;
@@ -126,6 +127,6 @@ double interpolate(const GridData& data, double x, double y) {
     gsl_interp2d_free(interp);
     gsl_interp_accel_free(xacc);
     gsl_interp_accel_free(yacc);
-
+    
     return result;
 }

@@ -8,6 +8,29 @@
 
 using namespace std;
 
+void show_matrix(GridData grid){
+        int l=(grid.z.size()-1)/2;
+        // Show the matrix for debug
+        std::cout << std::setw(22);
+        for (int i=0; i<grid.x.size(); i++){
+            std::cout << grid.x[i] << std::setw(14);
+        }
+        std::cout << std::endl << std::setw(21) << "i=  ";
+        for (int i=0; i<grid.x.size(); i++){
+            std::cout << i << std::setw(14);
+        }
+        std::cout << std::endl;
+        for (int j=0; j<grid.y.size(); j++){
+            for (int i=0; i<grid.x.size(); i++){
+                if (i==0){
+                    std::cout << grid.y[j] << "  j=" << j << "  ";
+                }
+                std::cout << grid.z[j][i] << std::setw(14);
+            }
+            std::cout << std::endl;
+        }
+}
+
 // A function that generates the reference array of data
 // This is the same content as the file grid_data_test.txt.gz but in plain text
 GridData gen_refdata(){
@@ -44,7 +67,7 @@ TEST(loadGridData, correctGridData) {
     }
     for(size_t j=0; j<data.y.size();j++){
         for(size_t i=0; i<data.x.size();i++){
-            EXPECT_EQ(data.z[i][j], data_ref.z[i][j]);
+            EXPECT_EQ(data.z[j][i], data_ref.z[j][i]);
         }
     }
 }
@@ -58,7 +81,7 @@ TEST(interpolate, correctInterpolation) {
     for(size_t j=0; j<data_ref.y.size();j++){
         for(size_t i=0; i<data_ref.x.size();i++){
             double c = interpolate(data_ref, data_ref.x[i], data_ref.y[j]);
-            EXPECT_NEAR(c, data_ref.z[i][j], 1e-6);
+            EXPECT_NEAR(c, data_ref.z[j][i], 1e-6);
         }
     }
 }

@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(2DGridInterpoler)
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "-I/usr/include/  -O2")
+set(CMAKE_C_FLAGS "-I/usr/include/  -O2")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Add the path to the Boost library directory
@@ -25,7 +27,7 @@ set(SOURCES
     )
 
 # Add your source files here
-add_executable(Interpoler_tests unit_tests.cpp ${SOURCES} ${HEADERS})
+add_executable(Interpoler_tests unit_tests.cpp ${SOURCES})
 
 # Link the required libraries
 target_link_libraries(Interpoler_tests ${Boost_LIBRARIES} ${GSL_LIBRARY} ${GSL_CBLAS_LIBRARY}  ${GTEST_BOTH_LIBRARIES} pthread)
